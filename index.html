@@ -535,6 +535,23 @@ const VOICE_LINES={m2u:'data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2Z
 const VOICE_MAP={m2u:'Selamat datang di Hutan Jejak Ayat',m3u:'Di Jembatan Hikmah',m4a:'Selamat datang di Kampung Harmoni',m5a:'Inilah Akademi Penjaga Negeri',m6d:'Kita hampir sampai di puncak',m6u:'Benar, Dzaki. Cinta tanah air perlu',m7d:'Ini dia gerbang terakhir',m7n:'Aku percaya padamu',m7a:'Luar biasa! Satu tahap lagi'};
 Object.keys(VOICE_LINES).forEach(k=>VOICE[k]=blobURL(VOICE_LINES[k]));
 MISSIONS.forEach(m=>m.steps.forEach(st=>{if(st.t!=='say')return;const plain=st.text.replace(/<[^>]+>/g,'');for(const k in VOICE_MAP)if(plain.startsWith(VOICE_MAP[k])){st.voice=k;break}}));
+
+/* ============ CAPAIAN & TUJUAN PEMBELAJARAN ============ */
+const CP_TEXT='Memahami ayat Al-Qur’an dan Hadis tentang cinta tanah air.';
+const TP_LIST=[
+ 'Membaca dan menghafal Surah al-Qaṣaṣ [28] ayat 85;',
+ 'Menjelaskan kandungan Surah al-Qaṣaṣ [28] ayat 85;',
+ 'Membaca dan menghafal Hadis tentang cinta tanah air;',
+ 'Memaparkan kandungan Hadis tentang cinta tanah air;',
+ 'Menguraikan makna dan keutamaan sikap cinta tanah air; serta',
+ 'Membiasakan perilaku cinta tanah air.'
+];
+/* TP yang dilatih di tiap misi (nomor TP, mulai dari 0) */
+const TP_MISI={1:[4],2:[0,1],3:[2,3],4:[5],5:[4,5],6:[5],7:[0,1,2,3,4,5]};
+const TP_NOTE={5:'Misi ini juga melatih literasi dan numerasi lewat contoh nyata kepedulian lingkungan sebagai wujud cinta tanah air.',7:'Misi akhir: semua tujuan pembelajaran diuji dan direfleksikan.'};
+const tpOL=idx=>`<ol style="padding-left:1.3em;margin:.3em 0">${idx.map(i=>`<li value="${i+1}">${TP_LIST[i]}</li>`).join('')}</ol>`;
+const tpHome=()=>`<div class="card"><h3>🎯 Capaian dan Tujuan Pembelajaran</h3><p><b>Capaian Pembelajaran:</b><br>${CP_TEXT}</p><p style="margin-bottom:0"><b>Tujuan Pembelajaran.</b> Setelah mempelajari materi ini, kamu mampu:</p>${tpOL([0,1,2,3,4,5])}</div>`;
+const tpTeacher=()=>`<b>Capaian Pembelajaran</b><p style="margin:.2em 0">${CP_TEXT}</p><b>Tujuan Pembelajaran</b><ol style="padding-left:1.3em;margin:.2em 0">${TP_LIST.map(t=>`<li>${t}</li>`).join('')}</ol>`;
 let voiceEl=null;
 function stopVoice(){const a=voiceEl;voiceEl=null;if(a){try{a.pause()}catch(e){}speaking=false;applyDuck()}}
 function playVoice(k,force){
@@ -555,7 +572,7 @@ function render(html){audioReset();app.innerHTML=topbar()+html;window.scrollTo(0
 function renderHome(){
  const any=Object.keys(S.done).length;
  const fig=(k,c='')=>`<div class="fig ${c}"><img src="${IMG[k]}" alt="${CH[k].n}" draggable="false"><b>${CH[k].n}</b><small>${CH[k].r}</small></div>`;
- render(`<div class="hero"><img class="logo" src="${IMG.logo}" alt="Jelajah Nusantara"><div class="eyebrow">MPI INTERAKTIF • PAI DAN BUDI PEKERTI • KELAS VIII</div><p style="font-size:1.1em">Petualangan tujuh misi untuk menemukan <b>Atlas Cinta Tanah Air</b></p></div><div class="cast">${fig('ustaz')}${fig('dzaki')}${fig('nur','nur')}${fig('adzkia')}</div><div class="card center"><h3>Siapa namamu, Penjelajah?</h3><input type="text" id="nm" maxlength="30" placeholder="Tulis namamu di sini" value="${esc(S.name)}" style="max-width:420px;text-align:center"><div class="row center"><button class="btn big" data-a="start">${any?'▶ Lanjutkan Petualangan':'▶ Mulai Petualangan'}</button></div></div>`)
+ render(`<div class="hero"><img class="logo" src="${IMG.logo}" alt="Jelajah Nusantara"><div class="eyebrow">MPI INTERAKTIF • PAI DAN BUDI PEKERTI • KELAS VIII</div><p style="font-size:1.1em">Petualangan tujuh misi untuk menemukan <b>Atlas Cinta Tanah Air</b></p></div><div class="cast">${fig('ustaz')}${fig('dzaki')}${fig('nur','nur')}${fig('adzkia')}</div><div class="card center"><h3>Siapa namamu, Penjelajah?</h3><input type="text" id="nm" maxlength="30" placeholder="Tulis namamu di sini" value="${esc(S.name)}" style="max-width:420px;text-align:center"><div class="row center"><button class="btn big" data-a="start">${any?'▶ Lanjutkan Petualangan':'▶ Mulai Petualangan'}</button></div></div>${tpHome()}`)
 }
 const NPP=[[49.5,79],[44,66],[68,59],[60,49],[66,38],[49,34],[45,25]];
 const NPL=[[11.4,50.9],[29.4,53.4],[45,46.4],[60.6,52.9],[74.4,44],[90,38],[89.4,72]];
@@ -592,6 +609,9 @@ const R={
  ayat:s=>{const segs=[['إِنَّ ٱلَّذِى فَرَضَ عَلَيْكَ ٱلْقُرْءَانَ','Innalladzī faraḍa ʿalaikal-qurʾāna','Sesungguhnya (Allah) yang mewajibkan engkau (melaksanakan) Al-Qur’an'],['لَرَآدُّكَ إِلَىٰ مَعَادٍ','larāddūka ilā maʿād','benar-benar akan mengembalikanmu ke tempat kembali'],['قُل رَّبِّىٓ أَعْلَمُ','qur-rabbī aʿlamu','Katakanlah: “Tuhanku lebih mengetahui'],['مَن جَآءَ بِٱلْهُدَىٰ وَمَنْ هُوَ فِى ضَلَٰلٍ مُّبِينٍ','man jāʾa bil-hudā wa man huwa fī ḍalālim mubīn','siapa yang membawa petunjuk dan siapa yang berada dalam kesesatan yang nyata.”']];
   return `<div class="card"><h3>📖 QS. al-Qaṣaṣ (28) ayat 85</h3><div class="ar xl">${segs.map(x=>x[0]).join(' ')} ﴿٨٥﴾</div>${AUDIO_AYAT?`<audio controls src="${AUDIO_AYAT}" style="width:100%"></audio>`:''}<p class="src">Terjemah mengikuti makna terjemah Kemenag RI; cocokkan dengan buku pegangan.</p><h4>🧠 Mode Hafalan (ketuk bagian untuk buka/tutup)</h4><div class="row"><button class="btn sec" data-a="amode" data-m="0">👀 Lihat semua</button><button class="btn sec" data-a="amode" data-m="1">🙈 Tutup separuh</button><button class="btn sec" data-a="amode" data-m="2">🔒 Tutup semua</button></div><div id="segs">${segs.map((x,i)=>`<div class="seg" data-a="seg"><div class="ar">${x[0]}</div><div class="lt">${x[1]}</div><div class="id">${x[2]}</div></div>`).join('')}</div><div class="row">${nextBtn('Sudah lancar, lanjut ▶')}</div></div>`}
 };
+
+R.tp=s=>`<div class="card"><h3>🎯 Tujuan Misi ${s.mid}</h3><p style="margin:.2em 0">Setelah menyelesaikan misi ini, kamu mampu:</p>${tpOL(s.idx)}${TP_NOTE[s.mid]?`<p class="src">${TP_NOTE[s.mid]}</p>`:''}<div class="row">${nextBtn('Mulai Misi ▶')}</div></div>`;
+MISSIONS.forEach(m=>m.steps.unshift({t:'tp',mid:m.id,idx:TP_MISI[m.id]}));
 function renderStep(){
  const m=MISSIONS[cur.m],s=m.steps[cur.i];
  if(!s)return finishMission();
@@ -1238,7 +1258,7 @@ function renderFinal(){sfx('menang');
 }
 function teacherDlg(){
  const d=$('#dlg');
- d.innerHTML=`<h3>👩‍🏫 Panel Guru</h3><label><input type="checkbox" id="oa" ${S.openAll?'checked':''}> <b>Buka semua misi</b> dan tampilkan tombol ⏭ (lewati langkah) untuk presentasi</label><hr><b>Alur presentasi yang disarankan (±15 menit)</b><ol><li>Perkenalan karakter dan Misi 1</li><li>Misi 2: baca dan hafalkan QS. al-Qaṣaṣ: 85 (mode hafalan)</li><li>Misi 3: tunjukkan hadis dan latihan memeriksa sumber</li><li>Misi 5: tampilkan data dan numerasi di PID</li><li>Misi 6–7: aksi nyata dan refleksi</li></ol><div class="warn"><b>Verifikasi konten:</b> terjemah, nomor hadis, dan tafsir pada media ini disusun sebagai rancangan. Mohon cocokkan dengan buku pegangan dan kitab rujukan sebelum dipakai. Kalimat “حب الوطن من الإيمان” sengaja dimasukkan sebagai bahan latihan bertabayyun.</div><div class="row"><button class="btn sec" id="rs">♻️ Reset semua progres</button><button class="btn" id="cl">Tutup</button></div>`;
+ d.innerHTML=`<h3>👩‍🏫 Panel Guru</h3><label><input type="checkbox" id="oa" ${S.openAll?'checked':''}> <b>Buka semua misi</b> dan tampilkan tombol ⏭ (lewati langkah) untuk presentasi</label><hr>${tpTeacher()}<hr><b>Alur presentasi yang disarankan (±15 menit)</b><ol><li>Perkenalan karakter dan Misi 1</li><li>Misi 2: baca dan hafalkan QS. al-Qaṣaṣ: 85 (mode hafalan)</li><li>Misi 3: tunjukkan hadis dan latihan memeriksa sumber</li><li>Misi 5: tampilkan data dan numerasi di PID</li><li>Misi 6–7: aksi nyata dan refleksi</li></ol><div class="warn"><b>Verifikasi konten:</b> terjemah, nomor hadis, dan tafsir pada media ini disusun sebagai rancangan. Mohon cocokkan dengan buku pegangan dan kitab rujukan sebelum dipakai. Kalimat “حب الوطن من الإيمان” sengaja dimasukkan sebagai bahan latihan bertabayyun.</div><div class="row"><button class="btn sec" id="rs">♻️ Reset semua progres</button><button class="btn" id="cl">Tutup</button></div>`;
  d.showModal();
  $('#oa').onchange=e=>{S.openAll=e.target.checked;save()};
  $('#cl').onclick=()=>{d.close();if(!cur||!$('#stage'))renderMap()};
